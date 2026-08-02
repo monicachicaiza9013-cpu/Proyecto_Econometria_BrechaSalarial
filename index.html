@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Brecha Salarial - Mónica Chicaiza</title>
+    <!-- FontAwesome, Google Fonts & Chart.js -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #ec4899;
+            --accent-glow: rgba(236, 72, 153, 0.35);
+            --card-bg: rgba(30, 41, 59, 0.7);
+        }
+
+        [data-theme="light"] {
+            --bg-gradient: linear-gradient(135deg, #f1f5f9 0%, #fce7f3 50%, #f1f5f9 100%);
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(0, 0, 0, 0.08);
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --accent: #db2777;
+            --accent-glow: rgba(219, 39, 119, 0.2);
+            --card-bg: rgba(255, 255, 255, 0.85);
+        }
+
+        * { box-sizing: border-box; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            padding: 24px 32px;
+            border-radius: 24px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(90deg, #ec4899, #8b5cf6);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .theme-toggle {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            padding: 10px 16px;
+            border-radius: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+
+        h1 {
+            font-size: 2.3rem;
+            font-weight: 800;
+            margin: 12px 0 8px 0;
+            background: linear-gradient(180deg, var(--text-main) 0%, var(--text-muted) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .meta-info { color: var(--text-muted); font-size: 0.95rem; display: flex; gap: 20px; flex-wrap: wrap; }
+
+        /* Cards Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .metric-card {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            padding: 20px;
+            border-radius: 20px;
+            backdrop-filter: blur(12px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px;
+            background: linear-gradient(90deg, #ec4899, #6366f1);
+        }
+
+        .metric-val { font-size: 2.2rem; font-weight: 800; color: var(--text-main); margin-top: 8px; }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 40px 0 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Charts Layout */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 24px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 600px) { .charts-grid { grid-template-columns: 1fr; } }
+
+        .chart-card {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            padding: 24px;
+            border-radius: 20px;
+            backdrop-filter: blur(12px);
+        }
+
+        /* Table Design */
+        .table-container {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 20px;
+            overflow-x: auto;
+            backdrop-filter: blur(12px);
+            margin-bottom: 30px;
+        }
+
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 14px 18px; border-bottom: 1px solid var(--glass-border); }
+        th { color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
+        td { font-weight: 600; }
+
+        /* Gallery Grid */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 24px;
+        }
+
+        .img-card {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 16px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .img-card img { width: 100%; border-radius: 12px; display: block; }
+
+        .btn-github {
+            display: inline-flex; align-items: center; gap: 10px;
+            background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+            color: white; padding: 14px 28px; border-radius: 14px;
+            font-weight: 700; text-decoration: none; margin: 30px auto;
+            box-shadow: 0 10px 25px var(--accent-glow);
+        }
+
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; padding: 20px;
+        }
+
+        .modal img { max-width: 90%; max-height: 90vh; border-radius: 16px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div>
+                <span class="badge"><i class="fa-solid fa-graduation-cap"></i> Econometría UTC</span>
+                <h1>Ecuación de Mincer & Brecha Salarial</h1>
+                <div class="meta-info">
+                    <span><i class="fa-regular fa-user"></i> Mónica Chicaiza</span>
+                    <span><i class="fa-solid fa-calculator"></i> Regresión Lineal OLS (ENEMDU)</span>
+                </div>
+            </div>
+            <button class="theme-toggle" id="themeBtn">
+                <i class="fa-solid fa-moon"></i> <span>Dark</span>
+            </button>
+        </header>
+
+        <!-- KPI Metrics -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <span style="color: var(--text-muted);"><i class="fa-solid fa-chart-line"></i> R² Ajustado (M2)</span>
+                <div class="metric-val" style="color: #f43f5e;">0.485</div>
+                <small style="color: var(--text-muted);">Poder explicativo del modelo</small>
+            </div>
+            <div class="metric-card">
+                <span style="color: var(--text-muted);"><i class="fa-solid fa-venus-mars"></i> Brecha Salarial</span>
+                <div class="metric-val" style="color: #ec4899;">-18.0%</div>
+                <small style="color: var(--text-muted);">Penalización estimada para mujeres</small>
+            </div>
+            <div class="metric-card">
+                <span style="color: var(--text-muted);"><i class="fa-solid fa-graduation-cap"></i> Retorno Educativo</span>
+                <div class="metric-val" style="color: #38bdf8;">+8.5%</div>
+                <small style="color: var(--text-muted);">Por cada año de educación</small>
+            </div>
+            <div class="metric-card">
+                <span style="color: var(--text-muted);"><i class="fa-solid fa-database"></i> Observaciones</span>
+                <div class="metric-val" style="color: #fbbf24;">15,000</div>
+                <small style="color: var(--text-muted);">Microdatos procesados</small>
+            </div>
+        </div>
+
+        <!-- Interactive Comparison Charts -->
+        <div class="section-title">
+            <i class="fa-solid fa-chart-column" style="color: var(--accent);"></i> Comparativa Interactiva Mincer
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3>Ajuste R² (Mincer Básico vs. Ampliado)</h3>
+                <canvas id="r2Chart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Retorno Salarial Promedio por Escolaridad</h3>
+                <canvas id="wageChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Econometric Table -->
+        <div class="section-title">
+            <i class="fa-solid fa-table" style="color: var(--accent);"></i> Coeficientes Estimados (Modelo OLS Ampliado)
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Variable Econométrica</th>
+                        <th>Coeficiente (Log Ingreso)</th>
+                        <th>Efecto Porcentual Aprox.</th>
+                        <th>Significancia</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Escolaridad (Años)</td>
+                        <td style="color: #38bdf8;">+0.0850</td>
+                        <td>+8.50%</td>
+                        <td>&lt; 0.001 ***</td>
+                    </tr>
+                    <tr>
+                        <td>Experiencia Potencial</td>
+                        <td style="color: #38bdf8;">+0.0320</td>
+                        <td>+3.20%</td>
+                        <td>&lt; 0.001 ***</td>
+                    </tr>
+                    <tr>
+                        <td>Experiencia al Cuadrado</td>
+                        <td style="color: #f43f5e;">-0.00045</td>
+                        <td>Rendimiento decreciente</td>
+                        <td>&lt; 0.001 ***</td>
+                    </tr>
+                    <tr>
+                        <td>Género (Mujer = 1)</td>
+                        <td style="color: #ec4899;">-0.1800</td>
+                        <td>-18.00%</td>
+                        <td>&lt; 0.001 ***</td>
+                    </tr>
+                    <tr>
+                        <td>Zona Urbana (Sí = 1)</td>
+                        <td style="color: #38bdf8;">+0.2200</td>
+                        <td>+22.00%</td>
+                        <td>&lt; 0.001 ***</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Static Output Visuals -->
+        <div class="section-title">
+            <i class="fa-solid fa-image" style="color: var(--accent);"></i> Gráficos Econométricos Exportados (`outputs/`)
+        </div>
+
+        <div class="gallery-grid">
+            <div class="img-card" onclick="openModal('outputs/perfil_experiencia_ingreso.png')">
+                <img src="outputs/perfil_experiencia_ingreso.png" alt="Perfil Experiencia Ingresos">
+            </div>
+            <div class="img-card" onclick="openModal('outputs/brecha_salarial_escolaridad.png')">
+                <img src="outputs/brecha_salarial_escolaridad.png" alt="Brecha Salarial por Escolaridad">
+            </div>
+        </div>
+
+        <!-- Call to Action -->
+        <div style="text-align: center;">
+            <a href="https://github.com/monicachicaiza9013-cpu/Proyecto_Econometria_BrechaSalarial" target="_blank" class="btn-github">
+                <i class="fa-brands fa-github"></i> Ver Repositorio en GitHub (Mónica Chicaiza)
+            </a>
+        </div>
+    </div>
+
+    <!-- Modal Zoom -->
+    <div class="modal" id="imgModal" onclick="this.style.display='none'">
+        <img id="modalImg" src="" alt="Zoom Image">
+    </div>
+
+    <script>
+        const themeBtn = document.getElementById('themeBtn');
+        themeBtn.addEventListener('click', () => {
+            const isDark = document.body.getAttribute('data-theme') !== 'light';
+            document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+            themeBtn.innerHTML = isDark 
+                ? '<i class="fa-solid fa-sun"></i> <span>Light</span>' 
+                : '<i class="fa-solid fa-moon"></i> <span>Dark</span>';
+        });
+
+        function openModal(src) {
+            document.getElementById('modalImg').src = src;
+            document.getElementById('imgModal').style.display = 'flex';
+        }
+
+        // --- CHART 1 ---
+        const ctx1 = document.getElementById('r2Chart').getContext('2d');
+        new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: ['R² Simple', 'R² Ajustado'],
+                datasets: [
+                    { label: 'Mincer Básico', data: [0.312, 0.311], backgroundColor: '#6366f1' },
+                    { label: 'Mincer Ampliado', data: [0.486, 0.485], backgroundColor: '#ec4899' }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { labels: { color: '#94a3b8' } } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                }
+            }
+        });
+
+        // --- CHART 2 ---
+        const ctx2 = document.getElementById('wageChart').getContext('2d');
+        new Chart(ctx2, {
+            type: 'line',
+            data: {
+                labels: ['0 años', '6 años', '12 años', '17 años'],
+                datasets: [
+                    { label: 'Hombre', data: [380, 520, 850, 1400], borderColor: '#38bdf8', backgroundColor: 'rgba(56, 189, 248, 0.1)', fill: true, tension: 0.3 },
+                    { label: 'Mujer', data: [310, 420, 690, 1150], borderColor: '#ec4899', backgroundColor: 'rgba(236, 72, 153, 0.1)', fill: true, tension: 0.3 }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { labels: { color: '#94a3b8' } } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
