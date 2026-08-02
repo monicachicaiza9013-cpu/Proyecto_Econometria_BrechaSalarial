@@ -1,0 +1,30 @@
+{
+    "modelo_1_basico": {
+        "r2": 0.4866,
+        "r2_adj": 0.4865,
+        "f_stat": 4737.8,
+        "aic": 16774.84,
+        "coeficientes": {
+            "const": 5.3489,
+            "escolaridad": 0.078,
+            "experiencia": 0.031,
+            "experiencia_sq": -0.0004
+        }
+    },
+    "modelo_2_ampliado": {
+        "r2": 0.649,
+        "r2_adj": 0.6488,
+        "f_stat": 3959.85,
+        "aic": 11079.37,
+        "coeficientes": {
+            "const": 4.8235,
+            "escolaridad": 0.0846,
+            "experiencia": 0.0314,
+            "experiencia_sq": -0.0004,
+            "mujer": -0.1951,
+            "interaccion_mujer_educ": -0.0147,
+            "urbano": 0.2086,
+            "horas_trabajo": 0.0119
+        }
+    }
+}
